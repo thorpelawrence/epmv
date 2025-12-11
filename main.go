@@ -50,6 +50,7 @@ func processFile(t *template.Template, file string) error {
 	if err != nil {
 		return fmt.Errorf("loading file: %w", err)
 	}
+	defer doc.Close()
 
 	md := doc.Metadata()
 
@@ -96,7 +97,7 @@ func processFile(t *template.Template, file string) error {
 	dir := filepath.Dir(file)
 
 	if err := os.Rename(file, filepath.Join(dir, base)); err != nil {
-		return fmt.Errorf("renaming file: %w", file, err)
+		return fmt.Errorf("renaming file: %w", err)
 	}
 
 	return nil
