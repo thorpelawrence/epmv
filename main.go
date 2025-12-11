@@ -19,6 +19,7 @@ var (
 	listJSON = flag.BoolP("json", "j", false, "list metadata in JSONL format, requires --list")
 	ascii    = flag.BoolP("ascii", "a", false, "transliterate file names to ASCII")
 	format   = flag.StringP("format", "f", "{{.Title}} - {{.Creator}}", "format string for output file name, .epub will be ignored")
+	verbose  = flag.BoolP("verbose", "v", false, "print renames")
 	dry      = flag.BoolP("dry", "n", false, "dry run, only print renames")
 )
 
@@ -105,13 +106,17 @@ func processFile(t *template.Template, file string) error {
 	dir := filepath.Dir(file)
 	renamed := filepath.Join(dir, base)
 
+	if file == renamed {
+		return nil
+	}
+
 	if *dry {
 		fmt.Fprintf(os.Stderr, "would rename '%s' → '%s'\n", file, renamed)
 		return nil
 	}
 
-	if file == renamed {
-		return nil
+	if *verbose {
+		fmt.Fprintf(os.Stderr, "rename '%s' → '%s'\n", file, renamed)
 	}
 
 	if fileExists(renamed) {
