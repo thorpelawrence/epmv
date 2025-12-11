@@ -110,6 +110,14 @@ func processFile(t *template.Template, file string) error {
 		return nil
 	}
 
+	if file == renamed {
+		return nil
+	}
+
+	if fileExists(renamed) {
+		return fmt.Errorf("file already exists: %s", renamed)
+	}
+
 	if err := os.Rename(file, renamed); err != nil {
 		return fmt.Errorf("renaming file: %w", err)
 	}
