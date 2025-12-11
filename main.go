@@ -2,7 +2,6 @@ package main
 
 import (
 	"bytes"
-	"flag"
 	"fmt"
 	"os"
 	"path/filepath"
@@ -10,12 +9,13 @@ import (
 
 	anyascii "github.com/anyascii/go"
 	"github.com/gen2brain/go-fitz"
+	flag "github.com/spf13/pflag"
 )
 
 var (
-	list   = flag.Bool("list", false, "list file metadata, without renaming")
-	ascii  = flag.Bool("ascii", false, "transliterate file names to ASCII")
-	format = flag.String("format", "{{.title}} - {{.author}}", "format string for output file name, .epub will be ignored")
+	list   = flag.BoolP("list", "l", false, "list file metadata, without renaming")
+	ascii  = flag.BoolP("ascii", "a", false, "transliterate file names to ASCII")
+	format = flag.StringP("format", "f", "{{.title}} - {{.author}}", "format string for output file name, .epub will be ignored")
 )
 
 func main() {
