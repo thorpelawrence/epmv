@@ -17,7 +17,7 @@ import (
 var (
 	list     = flag.BoolP("list", "l", false, "list file metadata, without renaming")
 	listJSON = flag.BoolP("json", "j", false, "list metadata in JSONL format, requires --list")
-	ascii    = flag.BoolP("ascii", "a", false, "transliterate file names to ASCII")
+	safe     = flag.BoolP("safe", "s", true, "transliterate file names to ASCII, and remove non alphanumeric characters")
 	format   = flag.StringP("format", "f", "{{.Title}} - {{.Creator}}", "format string for output file name, .epub will be ignored")
 	verbose  = flag.BoolP("verbose", "v", false, "print renames")
 	dry      = flag.BoolP("dry", "n", false, "dry run, only print renames")
@@ -98,9 +98,11 @@ func processFile(t *template.Template, file string) error {
 	}
 	base := buf.String() + ".epub"
 
-	if *ascii && !isASCII(base) {
-		fmt.Fprintln(os.Stderr, "info: transliterating non-ASCII:", base)
-		base = anyascii.Transliterate(base)
+	if *safe {
+		if !isASCII(base) {
+			base = anyascii.Transliterate(base)
+		}
+		base = cleanBasename(base)
 	}
 
 	dir := filepath.Dir(file)

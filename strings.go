@@ -1,8 +1,8 @@
 package main
 
 import (
+	"regexp"
 	"strings"
-	"unicode"
 )
 
 const (
@@ -17,12 +17,15 @@ func trimSuffixEPUB(s string) string {
 	return s
 }
 
-func isASCII(s string) bool {
-	for _, c := range s {
-		if c > unicode.MaxASCII {
-			return false
-		}
-	}
+var (
+	reASCII       = regexp.MustCompile(`^[ -~]*$`)
+	reIllegalName = regexp.MustCompile(`[^[:alnum:]-. ]`)
+)
 
-	return true
+func isASCII(s string) bool {
+	return reASCII.MatchString(s)
+}
+
+func cleanBasename(s string) string {
+	return reIllegalName.ReplaceAllString(s, "")
 }
