@@ -1,7 +1,6 @@
 package main
 
 import (
-	"bytes"
 	"strings"
 	"unicode"
 )
@@ -16,10 +15,6 @@ func trimSuffixEPUB(s string) string {
 	}
 
 	return s
-}
-
-func trimNul(s string) string {
-	return strings.TrimSpace(string(bytes.Trim([]byte(s), "\x00")))
 }
 
 func isASCII(s string) bool {

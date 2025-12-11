@@ -2,21 +2,22 @@ package main
 
 import (
 	"bytes"
+	"encoding/json"
+	"errors"
 	"fmt"
 	"os"
 	"path/filepath"
-	"slices"
 	"text/template"
 
 	anyascii "github.com/anyascii/go"
-	"github.com/gen2brain/go-fitz"
 	flag "github.com/spf13/pflag"
+	"github.com/taylorskalyo/goreader/epub"
 )
 
 var (
 	list   = flag.BoolP("list", "l", false, "list file metadata, without renaming")
 	ascii  = flag.BoolP("ascii", "a", false, "transliterate file names to ASCII")
-	format = flag.StringP("format", "f", "{{.title}} - {{.author}}", "format string for output file name, .epub will be ignored")
+	format = flag.StringP("format", "f", "{{.Title}} - {{.Creator}}", "format string for output file name, .epub will be ignored")
 )
 
 func main() {
@@ -46,41 +47,32 @@ func run() error {
 }
 
 func processFile(t *template.Template, file string) error {
-	doc, err := fitz.New(file)
+	rc, err := epub.OpenReader(file)
 	if err != nil {
 		return fmt.Errorf("loading file: %w", err)
 	}
-	defer doc.Close()
+	defer rc.Close()
 
-	md := doc.Metadata()
+	if len(rc.Rootfiles) == 0 || rc.Rootfiles[0] == nil {
+		return errors.New("reading metadata: no root files")
+	}
+	md := rc.Rootfiles[0].Package.Metadata
 
 	if *list {
-		name, err := filepath.Rel(".", file)
+		path, err := filepath.Rel(".", file)
 		if err != nil {
 			// non-critical, just print the basename
-			name = filepath.Base(file)
+			path = filepath.Base(file)
 		}
-		fmt.Fprintf(
-			os.Stdout,
-			"----------------------\n%s\n----------------------\n",
-			name,
-		)
 
-		keys := make([]string, 0, len(md))
-		for k := range md {
-			keys = append(keys, k)
+		fmt.Fprintf(os.Stdout, "%-10s| %s\n", "path", path)
+		j, err := json.MarshalIndent(md, "          | ", "  ")
+		if err != nil {
+			return fmt.Errorf("marshaling json: %w", err)
 		}
-		slices.Sort(keys)
-
-		for _, k := range keys {
-			fmt.Fprintf(os.Stdout, "%-20s | %s\n", k, trimNul(md[k]))
-		}
+		fmt.Fprintf(os.Stdout, "%-10s| %s\n----------+\n", "metadata", string(j))
 
 		return nil
-	}
-
-	for k, v := range md {
-		md[k] = trimNul(v)
 	}
 
 	var buf bytes.Buffer
