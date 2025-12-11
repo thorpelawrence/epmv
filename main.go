@@ -18,6 +18,7 @@ var (
 	list   = flag.BoolP("list", "l", false, "list file metadata, without renaming")
 	ascii  = flag.BoolP("ascii", "a", false, "transliterate file names to ASCII")
 	format = flag.StringP("format", "f", "{{.Title}} - {{.Creator}}", "format string for output file name, .epub will be ignored")
+	dry    = flag.BoolP("dry", "n", false, "dry run, only print renames")
 )
 
 func main() {
@@ -87,8 +88,14 @@ func processFile(t *template.Template, file string) error {
 	}
 
 	dir := filepath.Dir(file)
+	renamed := filepath.Join(dir, base)
 
-	if err := os.Rename(file, filepath.Join(dir, base)); err != nil {
+	if *dry {
+		fmt.Fprintf(os.Stderr, "would rename '%s' → '%s'\n", file, renamed)
+		return nil
+	}
+
+	if err := os.Rename(file, renamed); err != nil {
 		return fmt.Errorf("renaming file: %w", err)
 	}
 
