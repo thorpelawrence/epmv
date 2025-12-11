@@ -15,10 +15,11 @@ import (
 )
 
 var (
-	list   = flag.BoolP("list", "l", false, "list file metadata, without renaming")
-	ascii  = flag.BoolP("ascii", "a", false, "transliterate file names to ASCII")
-	format = flag.StringP("format", "f", "{{.Title}} - {{.Creator}}", "format string for output file name, .epub will be ignored")
-	dry    = flag.BoolP("dry", "n", false, "dry run, only print renames")
+	list     = flag.BoolP("list", "l", false, "list file metadata, without renaming")
+	listJSON = flag.BoolP("json", "j", false, "list metadata in JSONL format, requires --list")
+	ascii    = flag.BoolP("ascii", "a", false, "transliterate file names to ASCII")
+	format   = flag.StringP("format", "f", "{{.Title}} - {{.Creator}}", "format string for output file name, .epub will be ignored")
+	dry      = flag.BoolP("dry", "n", false, "dry run, only print renames")
 )
 
 func main() {
@@ -32,6 +33,10 @@ func main() {
 
 func run() error {
 	files := flag.Args()
+
+	if *listJSON && !*list {
+		return errors.New("cannot use --json without --list")
+	}
 
 	t, err := template.New("name").Parse(trimSuffixEPUB(*format))
 	if err != nil {
@@ -64,6 +69,16 @@ func processFile(t *template.Template, file string) error {
 		if err != nil {
 			// non-critical, just print the basename
 			path = filepath.Base(file)
+		}
+
+		if *listJSON {
+			if err := json.NewEncoder(os.Stdout).Encode(map[string]any{
+				"path":     path,
+				"metadata": md,
+			}); err != nil {
+				return fmt.Errorf("encoding json: %w", err)
+			}
+			return nil
 		}
 
 		fmt.Fprintf(os.Stdout, "%-10s| %s\n", "path", path)
