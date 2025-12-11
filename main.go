@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
+	"slices"
 	"text/template"
 
 	anyascii "github.com/anyascii/go"
@@ -50,6 +51,8 @@ func processFile(t *template.Template, file string) error {
 		return fmt.Errorf("loading file: %w", err)
 	}
 
+	md := doc.Metadata()
+
 	if *list {
 		name, err := filepath.Rel(".", file)
 		if err != nil {
@@ -61,19 +64,22 @@ func processFile(t *template.Template, file string) error {
 			"----------------------\n%s\n----------------------\n",
 			name,
 		)
-	}
 
-	md := doc.Metadata()
-	for k, v := range md {
-		trimmed := trimNul(v)
-		md[k] = trimmed
-		if *list {
-			fmt.Fprintf(os.Stdout, "%-20s | %s\n", k, trimmed)
+		keys := make([]string, 0, len(md))
+		for k := range md {
+			keys = append(keys, k)
 		}
+		slices.Sort(keys)
+
+		for _, k := range keys {
+			fmt.Fprintf(os.Stdout, "%-20s | %s\n", k, trimNul(md[k]))
+		}
+
+		return nil
 	}
 
-	if *list {
-		return nil
+	for k, v := range md {
+		md[k] = trimNul(v)
 	}
 
 	var buf bytes.Buffer

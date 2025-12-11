@@ -19,7 +19,7 @@ func trimSuffixEPUB(s string) string {
 }
 
 func trimNul(s string) string {
-	return string(bytes.Trim([]byte(s), "\x00"))
+	return strings.TrimSpace(string(bytes.Trim([]byte(s), "\x00")))
 }
 
 func isASCII(s string) bool {
