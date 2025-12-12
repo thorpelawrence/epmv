@@ -18,12 +18,12 @@ func trimSuffixEPUB(s string) string {
 }
 
 var (
-	reASCII       = regexp.MustCompile(`^[ -~]*$`)
+	reNonASCII    = regexp.MustCompile(`[^ -~]`)
 	reIllegalName = regexp.MustCompile(`[^[:alnum:]-. ]`)
 )
 
 func isASCII(s string) bool {
-	return reASCII.MatchString(s)
+	return !reNonASCII.MatchString(s)
 }
 
 func cleanBasename(s string) string {
