@@ -34,6 +34,9 @@ func main() {
 
 func run() error {
 	files := flag.Args()
+	if len(files) == 0 {
+		return errors.New("no input files")
+	}
 
 	if *listJSON && !*list {
 		return errors.New("cannot use --json without --list")
