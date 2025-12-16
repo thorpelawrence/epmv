@@ -1,6 +1,6 @@
 module github.com/thorpelawrence/epmv
 
-go 1.25.5
+go 1.25.4
 
 require (
 	github.com/anyascii/go v0.3.3

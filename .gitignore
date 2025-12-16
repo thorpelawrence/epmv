@@ -8,6 +8,9 @@
 *.so
 *.dylib
 
+# Nix artifacts
+result
+
 # Test binary, built with `go test -c`
 *.test
 
