@@ -1,4 +1,4 @@
-module github.com/thorpelawrence/epmv
+module go.letc.me/epmv
 
 go 1.25.4
 
